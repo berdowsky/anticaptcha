@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+	"errors"
 )
 
 var (
@@ -134,8 +135,18 @@ func (c *Client) createTaskImage(imgString string) (float64, error) {
 	// Decode response
 	responseBody := make(map[string]interface{})
 	json.NewDecoder(resp.Body).Decode(&responseBody)
-	// TODO treat api errors and handle them properly
-	return responseBody["taskId"].(float64), nil
+
+	if errorCode, ok := responseBody["errorCode"].(string); ok {
+		if errorDescription, ok := responseBody["errorDescription"].(string); ok {
+			return 0, errors.New(errorCode + ": " + errorDescription)
+		}
+		return 0, errors.New(errorCode)
+	}
+	if taskId, ok := responseBody["taskId"].(float64); ok {
+		return taskId, nil
+	} else {
+		return 0, errors.New("task id is empty")
+	}
 }
 
 // SendImage Method to encapsulate the processing of the image captcha

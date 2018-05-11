@@ -47,8 +47,15 @@ func (c *Client) createTaskRecaptcha(websiteURL string, recaptchaKey string) (fl
 	// Decode response
 	responseBody := make(map[string]interface{})
 	json.NewDecoder(resp.Body).Decode(&responseBody)
-	// TODO treat api errors and handle them properly
-	return responseBody["taskId"].(float64), nil
+
+	if errorCode, ok := responseBody["errorCode"].(string); ok {
+		return 0, errors.New(errorCode)
+	}
+	if taskId, ok := responseBody["taskId"].(float64); ok {
+		return taskId, nil
+	} else {
+		return 0, errors.New("task id is empty")
+	}
 }
 
 // Method to check the result of a given task, returns the json returned from the api

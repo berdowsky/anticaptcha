@@ -137,9 +137,6 @@ func (c *Client) createTaskImage(imgString string) (float64, error) {
 	json.NewDecoder(resp.Body).Decode(&responseBody)
 
 	if errorCode, ok := responseBody["errorCode"].(string); ok {
-		if errorDescription, ok := responseBody["errorDescription"].(string); ok {
-			return 0, errors.New(errorCode + ": " + errorDescription)
-		}
 		return 0, errors.New(errorCode)
 	}
 	if taskId, ok := responseBody["taskId"].(float64); ok {
